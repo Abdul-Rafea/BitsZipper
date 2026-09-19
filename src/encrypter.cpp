@@ -54,7 +54,7 @@ int main() {
 
 	int maxBits = ceil(log2(charMap.size())); // calculate max bits per charaacter
 	
-	// Cheking If in ASCII Range
+	// Cheking If In ASCII Range
 	if (maxBits > 256) {
 		cout << "ERROR: file is greter than ASCII Range";
 		return 0;
@@ -63,7 +63,7 @@ int main() {
 	// Creating Output File
 	ofstream outputFile(outputFileName);
 
-
+	// Checking If File Exists
 	if (filesystem::exists(baseName)) { 
 		cout << "ERROR: file cannnot be created" << endl;
 		return 0;
@@ -76,29 +76,55 @@ int main() {
 	}
 
 	//Writting charMap in Output File
-	outputFile << "{ ";
 	for (int i = 0; i < charMap.size(); i++) {
 		outputFile << charMap.at(i);
 	}
-	outputFile << " }";
+	outputFile << "\n";
 
-	// Writing Chacters In outputFile
-	char nonfilledChar;
+	// Compressing Chacters And Writting In outputFile
+	char newChar = static_cast<char>(0);
 	int usedBits = 0;
 
 	while (inputFile.get(letter)) {
-		char newChar;
-
-		// Finding And Coverting Code To Character
 		for (int i = 0; i < charMap.size(); i++) {
 			if (letter == charMap.at(i)) {
-				 newChar = static_cast<char>(i);
-				 usedBits += maxBits;
+				char targetChar = static_cast<char>(i); // convert character code to character
+				bool is_full = (usedBits + maxBits) >= 8; // check if newChar has sapce for targetChar
+				
+				if (!is_full) {
+					targetChar >> usedBits; // shift bits to the right
+					newChar | targetChar; // using OR to add targetChar into newChar
+					usedBits += maxBits;
+
+					if (usedBits == 8) {
+						outputFile << newChar;
+
+						newChar = static_cast<char>(0);
+						usedBits = 0;
+					}
+				}
+				else {
+					//Check Free Space
+					int freeSpace = 8 - usedBits;
+					
+					if (freeSpace == 0) {
+						char newTempChar = static_cast<char>(0);
+					}
+					else {
+						char tempTargetChar = targetChar >> (8 - maxBits); // shift to right most
+						tempTargetChar >> (8 - freeSpace); // shift right by free sapces
+
+						newChar | tempTargetChar; // add into newChar
+						outputFile << newChar;
+						targetChar << freeSpace; // shift left by free spaces
+						newChar = targetChar;
+						usedBits = 8 - freeSpace;
+					}
+				}
+
 				break;
 			}
 		}
-		
-		if()
 	}
 
 	// Closing Opened Files
