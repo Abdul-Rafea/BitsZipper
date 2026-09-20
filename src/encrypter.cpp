@@ -13,15 +13,14 @@ void printVector(vector<char> charMap);
 int main() {
 	string inputFileName = "fileInput/main.txt";
 	ifstream inputFile(inputFileName);
+	vector<char> charMap;
+	char letter;
 
 	// Checking If File Is Open
 	if (!inputFile.is_open()) {
 		cout << "ERROR: cannot open output file" << endl;
 		return 0;
 	}
-	
-	vector<char> charMap;
-	char letter;
 
 	// Reading Input File
 	while (inputFile.get(letter)) {
@@ -39,7 +38,7 @@ int main() {
 		}
 	}
 
-	printVector(charMap);
+	//printVector(charMap);
 
 	// Creating Ouput File Name
 	int dotIndex = inputFileName.rfind('.');
@@ -56,21 +55,18 @@ int main() {
 	
 	// Cheking If In ASCII Range
 	if (maxBits > 256) {
-		cout << "ERROR: file is greter than ASCII Range";
+		cout << "ERROR: file is greater than ASCII Range";
 		return 0;
 	}
 	
 	// Creating Output File
 	ofstream outputFile(outputFileName);
-
-	// Checking If File Exists
+	// Checking If File Exists And Is Open
 	if (filesystem::exists(baseName)) { 
 		cout << "ERROR: file cannnot be created" << endl;
 		return 0;
 	}
-
-	// Checking If File Is Open
-	if (!outputFile.is_open()) {
+	else if (!outputFile.is_open()) {
 		cout << "ERROR: cannot open output File" << endl;
 		return 0;
 	}
@@ -82,33 +78,26 @@ int main() {
 	outputFile << "\n";
 
 	// Compressing Chacters And Writting In outputFile
-	char newChar = static_cast<char>(0);
+	unsigned char newChar = static_cast<char>(0);
 	int usedBits = 0;
 
 	while (inputFile.get(letter)) {
 		for (int i = 0; i < charMap.size(); i++) {
 			if (letter == charMap.at(i)) {
 				char targetChar = static_cast<char>(i); // convert character code to character
-				bool is_full = (usedBits + maxBits) >= 8; // check if newChar has sapce for targetChar
-				
+				bool is_full = (usedBits + maxBits) > 8; // check if newChar has sapce for targetChar
 				if (!is_full) {
 					targetChar >> usedBits; // shift bits to the right
 					newChar | targetChar; // using OR to add targetChar into newChar
 					usedBits += maxBits;
-
-					if (usedBits == 8) {
-						outputFile << newChar;
-
-						newChar = static_cast<char>(0);
-						usedBits = 0;
-					}
 				}
 				else {
 					//Check Free Space
 					int freeSpace = 8 - usedBits;
 					
 					if (freeSpace == 0) {
-						char newTempChar = static_cast<char>(0);
+						outputFile << newChar;
+						newChar = targetChar;
 					}
 					else {
 						char tempTargetChar = targetChar >> (8 - maxBits); // shift to right most
@@ -125,6 +114,17 @@ int main() {
 				break;
 			}
 		}
+
+		// Writing newChar in outputFile
+		if (usedBits == 8) {
+			outputFile << newChar;
+
+			newChar = static_cast<char>(0);
+			usedBits = 0;
+		}
+
+		// End OF File 
+		outputFile << newChar;
 	}
 
 	// Closing Opened Files
