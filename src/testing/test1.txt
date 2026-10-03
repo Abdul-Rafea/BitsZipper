@@ -1,0 +1,110 @@
+================================================================================
+C++ BIT-PACKING COMPRESSOR & DECOMPRESSOR BENCHMARK TEST SUITE
+================================================================================
+
+[SECTION 1: Standard ASCII & Alphabets]
+The quick brown fox jumps over the lazy dog.
+THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.
+abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789
+
+[SECTION 2: Special Characters & Symbols]
+Symbol Test: ! @ # $ % ^ & * ( ) _ + - = [ ] { } | \ ; : ' " , . < > / ? ~ `
+Bit Shift Verification: 11110000 00001111 10101010 01010101
+Escapes & Spacing: Tab	Space   Newline
+
+[SECTION 3: Repetitive Text Patterns (Bit Efficiency Test)]
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+1234567890123456789012345678901234567890123456789012345678901234567890
+Wasabi X - Wasabi X - Wasabi X - Wasabi X - Wasabi X - Wasabi X - Wasabi X
+
+[SECTION 4: Structured Data Simulation]
+ID: 001 | Status: ACTIVE | Bits: 01000001 | Name: Alpha_Unit
+ID: 002 | Status: ACTIVE | Bits: 01000010 | Name: Beta_Unit
+ID: 003 | Status: PAUSED | Bits: 01000011 | Name: Gamma_Unit
+ID: 004 | Status: ACTIVE | Bits: 01000100 | Name: Delta_Unit
+ID: 005 | Status: CLOSED | Bits: 01000101 | Name: Epsilon_Unit
+
+[SECTION 5: Repeated Block for Compression Testing]
+The quick brown fox jumps over the lazy dog! 1234567890
+The quick brown fox jumps over the lazy dog! 1234567Here is a test text block with a mixture of uppercase/lowercase letters, numbers, punctuation, symbols, and repeating lines to test your character dictionary and bit-packing logic.
+
+```text
+================================================================================
+C++ BIT-PACKING COMPRESSOR & DECOMPRESSOR TEST BENCH
+================================================================================
+
+1. SYSTEM SPECIFICATION & ALGORITHM TEST CASES:
+--------------------------------------------------------------------------------
+The quick brown fox jumps over the lazy dog! 0123456789
+THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG! 9876543210
+Pack My Box With Five Dozen Liquor Jugs. ~!@#$%^&*()_+`-={}|[]\:";'<>?,./
+
+2. REPETITIVE STRUCTURE TEST (HIGH REDUNDANCY):
+--------------------------------------------------------------------------------
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+01010101010101010101010101010101010101010101010101010101010101010101010101010101
+ABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABAB
+
+3. SIMULATED LOG DATA & STRUCTURED ARRAYS:
+--------------------------------------------------------------------------------
+[2026-10-02 22:15:01] [INFO] Compressor initialized successfully.
+[2026-10-02 22:15:02] [DEBUG] Reading byte buffer at address 0x7FFF004...
+[2026-10-02 22:15:03] [WARNING] Reallocation triggered: old_size=256, new_size=512
+[2026-10-02 22:15:04] [INFO] Character map set: 52 unique symbols identified.
+[2026-10-02 22:15:05] [SUCCESS] Bit-packing complete. Compression ratio: 42.5%
+
+4. CODE PREVIEW & POINTER ARITHMETIC PARSING:
+--------------------------------------------------------------------------------
+#include <iostream>
+#include <fstream>
+
+int main() {
+    char buffer[256];
+    for (int i = 0; i < 256; ++i) {
+        buffer[i] = static_cast<char>(i);
+    }
+    std::cout << "Testing bit shifts: " << (1 << 7) << " | " << (128 >> 1) << std::endl;
+    return 0;
+}
+
+5. EXTENDED TEXT BLOCK (VARIED SYMBOL FREQUENCY):
+--------------------------------------------------------------------------------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
+eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt 
+in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+
+6. REPETITION LOOP FOR SIZE EXPANSION:
+--------------------------------------------------------------------------------
+Line 001: Testing dynamic heap allocation and pointer safety during streaming.
+Line 002: Testing dynamic heap allocation and pointer safety during streaming.
+Line 003: Testing dynamic heap allocation and pointer safety during streaming.
+Line 004: Testing dynamic heap allocation and pointer safety during streaming.
+Line 005: Testing dynamic heap allocation and pointer safety during streaming.
+Line 006: Testing dynamic heap allocation and pointer safety during streaming.
+Line 007: Testing dynamic heap allocation and pointer safety during streaming.
+Line 008: Testing dynamic heap allocation and pointer safety during streaming.
+Line 009: Testing dynamic heap allocation and pointer safety during streaming.
+Line 010: Testing dynamic heap allocation and pointer safety during streaming.
+Line 011: Testing dynamic heap allocation and pointer safety during streaming.
+Line 012: Testing dynamic heap allocation and pointer safety during streaming.
+Line 013: Testing dynamic heap allocation and pointer safety during streaming.
+Line 014: Testing dynamic heap allocation and pointer safety during streaming.
+Line 015: Testing dynamic heap allocation and pointer safety during streaming.
+Line 016: Testing dynamic heap allocation and pointer safety during streaming.
+Line 017: Testing dynamic heap allocation and pointer safety during streaming.
+Line 018: Testing dynamic heap allocation and pointer safety during streaming.
+Line 019: Testing dynamic heap allocation and pointer safety during streaming.
+Line 020: Testing dynamic heap allocation and pointer safety during streaming.
+
+================================================================================
+END OF TEST FILE
+================================================================================

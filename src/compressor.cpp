@@ -1,208 +1,202 @@
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 #include <chrono>
 #include <cmath>
 
 using namespace std;
 
-class Compressor {
-	private:
-		string filename;
-		string compressedFilename;
-		vector<char> charMap;
-		vector<int> bitArray;
-		vector<char> charArray;
-		int maxBits;
-
-	public:
-		Compressor(string filename) {
-			this->filename = filename;
-			maxBits = 0;
-		}
-
-		void setCharMap() {
-			ifstream file(filename);
-			if (!file.is_open()) {
-				cout << "ERROR: Failed to open (" << filename << ")" << endl;
-				return;
-			}
-
-			char letter;
-			while (file.get(letter)) {
-				bool matchFound = false;
-				for (int i = 0; i < charMap.size(); i++) {
-					if (letter == charMap.at(i)) {
-						matchFound = true;
-					}
-				}
-				if (!matchFound) {
-					charMap.push_back(letter);
-				}
-			}
-
-			maxBits = int(ceil(std::log2(charMap.size()))); // caculating maxBits
-			if (maxBits == 0) { // handling edge case
-				maxBits = 1;
-			}
-
-			file.close();
-		}
-
-		void printCharMap() {
-			cout << "Char Map : -" << endl;
-			for (int i = 0; i < charMap.size(); i++) {
-				cout << charMap.at(i) << " | " << i << endl;
-			}
-		}
-
-		void setBitArray() {
-			ifstream file(filename);
-			if (!file.is_open()) {
-				cout << "ERROR: Failed to open (" << filename << ")" << endl;
-				return;
-			}
-
-			char letter;
-			while (file.get(letter)) { // reading every letter
-				for (int i = 0; i < charMap.size(); i++) { // looping through charMap
-					if (letter == charMap.at(i)) {
-						for (int j = maxBits - 1; j >= 0; j--) { // cheking all bits of letter
-							bool isBitOn = i & (1 << j);
-							bitArray.push_back(isBitOn);
-						}
-					}
-				}
-			}
-
-			file.close();
-		}
-
-		void printBitArray() {
-			cout << "Bit Array : ";
-			for (int i = 0; i < bitArray.size(); i++) {
-				cout << bitArray.at(i);
-			}
-		}
-
-		void bitArrayToCharArray() {
-			int count = 0;
-			char packedChar = 0;
-			for (int i = 0; i < bitArray.size(); i++) {
-				// Cheking if packedChar is filled
-				if (count == 8) {
-					charArray.push_back(packedChar);
-					count = 0;
-					packedChar = 0;
-				}
-			
-				packedChar = packedChar | (bitArray.at(i) << (7 - count));
-				count++;
-			}
-		
-			// Handling End Of File 
-			if (count > 0) {
-				charArray.push_back(packedChar);
-			}
-
-			cout << "SUCCESS: " << "cmpressed " << filename << endl;
-		}
-
-		void printCharArray() {
-			cout << "Char Array: ";
-			for (int i = 0; i < charArray.size(); i++) {
-				cout << charArray.at(i);
-			}
-		}
-
-		void createKeyFile() {
-			size_t dotPosition = filename.rfind('.');
-			string keyFilename = filename.substr(0, dotPosition) + "(key).txt";
-			ofstream file(keyFilename, ios::binary);
-
-			if (!file.is_open()) {
-				cout << "ERROR: Failed to open (" << keyFilename << ")" << endl;
-				return;
-			}
-
-			// Writting charMap in key file 
-			for (int i = 0; i < charMap.size(); i++) {
-				file << charMap.at(i);
-			}
-
-			cout << "  -> " << keyFilename << " created" << endl;
-		}
-
-		void createCompressedFile() {
-			size_t dotPosition = filename.rfind('.');
-			string compressedFileName = filename.substr(0, dotPosition) + "(compressed).bin";
-			ofstream file(compressedFileName, ios::binary);
-
-			if (!file.is_open()) {
-				cout << "ERROR: Failed to open (" << compressedFileName << ")" << endl;
-				return;
-			}
-
-			// Writting charArray in compressed file 
-			for (int i = 0; i < charArray.size(); i++) {
-				file << charArray.at(i);
-			}
-
-			cout << "  -> " << compressedFileName << " created" << endl;
-			compressedFilename = compressedFileName;
-		}
-
-		void printCmpressionDetails() {
-			filesystem::path filePath = filename;
-			filesystem::path compressedFilePath = compressedFilename;
-
-			try {
-				double fileSize = static_cast<double>(filesystem::file_size(filePath));
-				double compressedFileSize = static_cast<double>(filesystem::file_size(compressedFilePath));
-				double compressionRatio = (compressedFileSize / fileSize) * 100;
-
-				cout << "Compression Info: " << endl;
-				cout << "  -> " << filename << " size: " << fileSize << " bytes" << endl;
-				cout << "  -> " << compressedFilename << " size: " << compressedFileSize << " bytes" << endl;
-				cout << "  -> Compression Ratio: " << compressionRatio << "%" << endl;
-			}
-			catch (const filesystem::filesystem_error& error) {
-				std::cerr << "ERROR: " << error.what() << endl;
-			}
-		}
-};
+// Function Prototypes
+int charArraySize(char* charArray);
+char* charArrayCombine(char* charArray1, char* charArray2);
 
 // Main Function
 int main() {
 	char filename[100];
 	cout << "Enter filename to compress: ";
 	cin >> filename;
-	ifstream file(filename);
+
+	// Opening File
+	ifstream file(filename, ios::binary);
 	if (!file.is_open()) {
-		cout << "ERROR: Failed to open: " << filename; 
+		cout << "ERROR: Failed to open: " << filename;
+		return 0;
+	}
+	
+	// Recording Start Time
+	auto startTime = chrono::high_resolution_clock::now();
+	
+	// Calculating Character Map And File Size
+	char letter;
+	int charMapSize = 0;
+	char* charMap = nullptr;
+	int fileSize = 0;
+	while (file.get(letter)) {
+		bool matchFound = false;
+		
+		for (int i = 0; i < charMapSize; i++) {
+			if (letter == charMap[i]) {
+				matchFound = true;
+			}
+		}
+
+		if (!matchFound) {
+			charMapSize++;
+			char* oldCharMap = charMap;
+			char* newCharMap = new char[charMapSize]; // creating new array
+
+			for (int i = 0; i < charMapSize - 1; i++) { // copying old array data
+				newCharMap[i] = charMap[i];
+			}
+
+			newCharMap[charMapSize - 1] = letter; // adding new letter
+			charMap = newCharMap; // passing new array pointer
+			delete[] oldCharMap;
+		}
+
+		fileSize++;
 	}
 
-	auto startTime = chrono::high_resolution_clock::now(); // record start time
-
-	Compressor compressor = Compressor(filename);
+	// Calculate Max Bits Per Character
+	int maxBits = int(ceil(log2(charMapSize)));
+	if (maxBits == 0) { // handling edge case
+		maxBits = 1;
+	}
 	
-	compressor.setCharMap();
-	//compressor.printCharMap();
+	// Reseting ifstream
+	file.clear();                 // clear EOF flag
+	file.seekg(0, ios::beg); // set pointer to beginning of file
+	
+	// Calculating Bit Array
+	int bitArraySize = 0;
+	bool* bitArray = nullptr;
+	while (file.get(letter)) {
+		for (int i = 0; i < charMapSize; i++) {
+			if (letter == charMap[i]) {
+				for (int j = maxBits - 1; j >= 0; j--) {
+					bool isBitOn = i & (1 << j);
+					
+					bitArraySize++;
+					bool* oldBitArray = bitArray;
+					bool* newBitArray = new bool[bitArraySize]; // creating new array
+					for (int k = 0; k < bitArraySize - 1; k++) { // copying old array into new
+						newBitArray[k] = bitArray[k];
+					}
+					newBitArray[bitArraySize - 1] = isBitOn; // setting mew bit
+					bitArray = newBitArray; // passing new pointer
+					delete[] oldBitArray;
+				}
+			}
+		}
+	}
 
-	compressor.setBitArray();
-	//compressor.printBitArray();
+	//// Printing Bit Array
+	//cout << "Bit Array: ";
+	//for (int i = 0; i < bitArraySize; i++) {
+	//	cout << bitArray[i];
+	//}
+	
+	// Creating And Opening Compressed And Key Files
+	char compressedFileExtension[] = "(compressed).txt";
+	char keyFileExtension[] = "(key).txt";
+	char filenameLegth = charArraySize(filename);
+	filename[filenameLegth - 4] = '\0';
+	char* compressedFileName = charArrayCombine(filename, compressedFileExtension);
+	char* keyFileName = charArrayCombine(filename, keyFileExtension);
 
-	compressor.bitArrayToCharArray();
-	//compressor.printCharArray();
+	ofstream compressedFile(compressedFileName, ios::binary);
+	if (!compressedFile.is_open()) {
+		cout << "ERROR: Failed to open " << compressedFileName;
+		return 0;
+	}
+	
+	ofstream keyFile(keyFileName, ios::binary);
+	if (!keyFile.is_open()) {
+		cout << "ERROR: Failed to open " << keyFileName;
+		return 0;
+	}
 
-	compressor.createKeyFile();
-	compressor.createCompressedFile();
+	// Writting Key File
+	keyFile << fileSize << " ";
+	for (int i = 0; i < charMapSize; i++) {
+		keyFile << charMap[i];
+	}
 
-	compressor.printCmpressionDetails();
+	// Packing Characters And Caculating Compressed File Size
+	char packedChar = 0;
+	int fillCount = 0;
+	int compressedFileSize = 0;
+	for (int i = 0; i < bitArraySize; i++) {
+		if (fillCount == 8) { // writing in compressed file when packedChar is filled
+			compressedFile << packedChar;
+			packedChar = 0;
+			fillCount = 0;
+			compressedFileSize++;
+		}
 
-	auto endTime = chrono::high_resolution_clock::now(); // record end time
-	auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime); // calcuate time duration
-	cout << endl << "Time taken: " << duration.count() << " ms" << endl;
+		packedChar = packedChar | (bitArray[i] << (7 - fillCount));
+		fillCount++;
+	}
+	 
+	if (fillCount > 0) { // handling EOF state
+		compressedFile << packedChar;
+		compressedFileSize++;
+	}
+
+	// Recording End Time And Calcualting Time Duration
+	auto endTime = chrono::high_resolution_clock::now();
+	auto duration = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);
+
+	// Printing Compresson Details
+	double compressionRatio = (static_cast<double>(compressedFileSize) / fileSize) * 100;
+
+	cout << endl << "Compression Info: -" << endl;
+	cout << "  -> Time Take: " <<duration.count() << " ms" << endl;
+	cout << "  -> File Size: " << fileSize << endl;
+	cout << "  -> Compressed File Size: " << compressedFileSize << endl;
+	cout << "  -> Compression Ratio: " << compressionRatio << "%";
+
+	// Closing Opened Files
+	file.close();
+	compressedFile.close();
+	keyFile.close();
+
+	// Deallocating Memeory
+	delete[] charMap;
+	delete[] bitArray;
+	delete[] compressedFileName;
+	delete[] keyFileName;
 
 	return 0;
+}
+
+// Function Definitions
+int charArraySize(char* charArray) {
+	int size = 0;
+	while (charArray[size] != '\0') {
+		size++;
+	}
+
+	return size;
+}
+
+char* charArrayCombine(char* charArray1, char* charArray2) {
+	char* charArray = new char[100];
+	int filledIndex = 0;
+
+	// Copying First Array
+	for (int i = 0; i < charArraySize(charArray1); i++) {
+		charArray[i] = charArray1[i];
+		filledIndex++;
+	}
+
+	// Copying Second Array
+	for (int i = 0; i < charArraySize(charArray2); i++) {
+		charArray[filledIndex] = charArray2[i];
+		filledIndex++;
+	}
+	
+	// Adding Null Character At Last Index
+	charArray[filledIndex] = '\0';
+
+	return charArray;
 }
